@@ -10,6 +10,7 @@
     "load-duckdb-xml": "node scripts/load-dbgap-xml.js"
   },
   "dependencies": {
+    "@duckdb/node-api": "^1.1.3-alpha.12",
     "astro": "^5.2.3",
     "commander": "^13.1.0",
     "fast-xml-parser": "^4.5.1"
