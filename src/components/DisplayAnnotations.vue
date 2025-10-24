@@ -1,7 +1,8 @@
 <script setup lang="ts">
 defineProps<{
-  urls: string[]
 }>()
+
+const urls = new URLSearchParams(window.location.search).getAll('url');
 </script>
 
 <template>
