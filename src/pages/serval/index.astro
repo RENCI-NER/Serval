@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import DisplayAnnotations from '../../components/DisplayAnnotations.vue';
+
+const urls = [
+    'https://stars.renci.org/var/babel_outputs/sdoh-annotations-2025oct23/sdoh_annotations_biomegatron_nameres.jsonl'
+]
+
+---
+
+<Layout title="Serval" description="Serval ...">
+    <main>
+        <h1>Serval</h1>
+
+        <p class="instructions">
+            Instructions go here.
+        </p>
+
+        <DisplayAnnotations urls={urls} />
+    </main>
+</Layout>
+
+<style>
+
+</style>
