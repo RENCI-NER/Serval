@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import "@ghentcdh/annotated-text/annotated-text.css";
 import "bootstrap/js/dist/collapse";
+
 import {onMounted, ref} from "vue";
+import {type Annotation, createAnnotatedText, getAnnotatedText} from "@ghentcdh/annotated-text";
 
 defineProps<{
 }>()
@@ -14,6 +17,7 @@ const urlData = ref({});
 const annotatedTextByTitle = ref({});
 const annotatedTextByAnnotationsDescending = ref({});
 const concepts = ref({});
+const highlighted_annotation = ref({});
 
 // 3. Helper to load and parse a JSONL file
 async function fetchJsonl(url: string): Promise<object[]> {
@@ -125,79 +129,77 @@ function conceptsSortedByEntryCountDescending() {
       .sort((a, b) => b.entry_count - a.entry_count);
 }
 
+function updateAnnotatedText(id, annotatedText) {
+  const textAnnotation = createAnnotatedText(id, {
+        annotation: {
+          defaultRender: "underline",
+          tagConfig: {
+            enabled: true,
+            tagFn: (annotation) => (annotation.biolink_type ?? "biolink:Entity").substring(8),
+          },
+        },
+      })
+      .setText(annotatedText.text)
+      .setAnnotations(annotatedText.annotations)
+      .on("mouse-enter", (event) => {
+        const annotation = event.data.annotation as Annotation;
+        getAnnotatedText(id).highlightAnnotations([
+          annotation.id,
+        ]);
+        highlighted_annotation.value = annotation;
+      });
+}
+
 </script>
 
 <template>
-  <h2>Test</h2>
-
-
-  <div class="accordion" id="accordionExample">
-    <div class="accordion-item">
-      <h2 class="accordion-header">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          Accordion Item #1
-        </button>
-      </h2>
-      <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-        <div class="accordion-body">
-          <strong>This is the first item’s accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It’s also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-        </div>
-      </div>
-    </div>
-    <div class="accordion-item">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-          Accordion Item #2
-        </button>
-      </h2>
-      <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-        <div class="accordion-body">
-          <strong>This is the second item’s accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It’s also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-        </div>
-      </div>
-    </div>
-    <div class="accordion-item">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-          Accordion Item #3
-        </button>
-      </h2>
-      <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-        <div class="accordion-body">
-          <strong>This is the third item’s accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It’s also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-        </div>
-      </div>
-    </div>
-  </div>
-  
   <h2>Texts</h2>
   <template v-if="loaded">
-    <div class="accordion" id="accordionTexts">
-      <div class="accordion-item" v-for="(annotatedText, index) in annotatedTextByAnnotationsDescending" :key="annotatedText.title">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseText' + index" aria-expanded="false" :aria-controls="'collapseText' + index">
-            <code>{{annotatedText.title}}</code>
-            {{annotatedText.annotations.length}} total annotations
-          </button>
-        </h2>
-        <div :id="'collapseText' + index" class="accordion-collapse collapse" data-bs-parent="#accordionTexts">
-          <div class="accordion-body">
-            <ol>
-              <li v-for="concept in conceptsForEntryTitle(annotatedText.title)" :key="concept.concept_id">
-                <code>{{concept.concept_id}}</code> ({{uniqList(concept.labels).join(', ')}}) [{{uniqList(concept.biolink_types).join(', ')}}]: ({{concept.start}}-{{concept.end}})
-              </li>
-            </ol>
+    <div class="container-fluid vh-100">
+      <div class="row h-100">
+        <div class="col-2 h-100 overflow-auto" style="max-height: 100vh;">
+          <div class="accordion" id="accordionTexts">
+            <div class="accordion-item" v-for="(annotatedText, index) in annotatedTextByAnnotationsDescending" :key="annotatedText.title">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseText' + index" aria-expanded="false" :aria-controls="'collapseText' + index" @click="updateAnnotatedText('annotatedTextComponent', annotatedText)">
+                  <code>{{annotatedText.title}}</code>
+                  {{annotatedText.annotations.length}} total annotations
+                </button>
+              </h2>
+              <div :id="'collapseText' + index" class="accordion-collapse collapse" data-bs-parent="#accordionTexts">
+                <div class="accordion-body">
+                  <p>Hmm.</p>
+                  <!--
+                  <ol>
+                    <li v-for="concept in conceptsForEntryTitle(annotatedText.title)" :key="concept.concept_id">
+                      <code>{{concept.concept_id}}</code> ({{uniqList(concept.labels).join(', ')}}) [{{uniqList(concept.biolink_types).join(', ')}}]
+                    </li>
+                  </ol>-->
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+        <div class="col-8">
+          <div class="h-100 d-flex">
+            <div id="annotatedTextComponent">
+             Test
+            </div>
+          </div>
+        </div>
+        <div class="col-2">
+          <code>{{highlighted_annotation}}</code>
         </div>
       </div>
     </div>
 
+    <!--
     <h2>Concepts</h2>
     <ol>
       <li v-for="concept in conceptsSortedByEntryCountDescending()" :key="concept.concept_id">
         <code>{{concept.concept_id}}</code> ({{uniqList(concept.labels).join(', ')}}, {{concept.entry_count}} entries)
       </li>
-    </ol>
+    </ol>-->
   </template>
   <div v-else>
     <p>Loading...</p>
