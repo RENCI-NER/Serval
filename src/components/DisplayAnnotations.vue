@@ -214,7 +214,7 @@ const highlightedAnnotationProvenances = computed (() => {
               </div>
             </div>
             <div class="col-5">
-              <div class="card">
+              <div class="card sticky-top">
                 <div class="card-header">
                   <h4>Selected annotation</h4>
                 </div>
