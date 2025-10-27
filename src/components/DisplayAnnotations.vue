@@ -3,7 +3,7 @@ import "@ghentcdh/annotated-text/annotated-text.css";
 import "bootstrap/js/dist/collapse";
 
 import {computed, onMounted, ref} from "vue";
-import {type Annotation, createAnnotatedText, getAnnotatedText} from "@ghentcdh/annotated-text";
+import {type Annotation, createAnnotatedText, getAnnotatedText, MarkdownTextAdapter} from "@ghentcdh/annotated-text";
 
 defineProps<{
 }>()
@@ -138,6 +138,7 @@ function selectText(id, annotatedText) {
   const textAnnotation = createAnnotatedText(id, {
         annotation: {
           defaultRender: "underline",
+          lineAdapter: MarkdownTextAdapter(),
           tagConfig: {
             enabled: true,
             tagFn: (annotation) => (annotation.biolink_type ?? "biolink:Entity").substring(8),
