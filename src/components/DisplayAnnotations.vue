@@ -202,49 +202,59 @@ const highlightedAnnotationProvenances = computed (() => {
                 </div>
               </div>
             </div>
-            <div class="col-5 card">
-              <div class="card-body">
-                <p v-if="!selectedTextID">Please select a text from the left.</p>
-                <div id="annotatedTextComponent" />
+            <div class="col-5">
+              <div class="card">
+                <div class="card-header">
+                  <h4>Annotated text</h4>
+                </div>
+                <div class="card-body">
+                  <p v-if="!selectedTextID">Please select a text from the left.</p>
+                  <div id="annotatedTextComponent" />
+                </div>
               </div>
             </div>
-            <div class="col-5 card">
-              <div class="card-body">
-                <form>
-                  <div class="">
-                    <label for="identifier" class="form-label">Text ID</label>
-                    <input readonly type="text" class="form-control" id="identifier" v-model="selectedTextID" />
-                  </div>
-                  <template v-if="highlighted_annotation">
+            <div class="col-5">
+              <div class="card">
+                <div class="card-header">
+                  <h4>Selected annotation</h4>
+                </div>
+                <div class="card-body">
+                  <form>
                     <div class="mb-3">
-                      <label for="highlightedAnnotationText" class="form-label">Selected text</label>
-                      <input readonly type="text" class="form-control" id="highlightedAnnotationText" v-model="highlighted_annotation.text" />
+                      <label for="identifier" class="form-label">Text ID</label>
+                      <input readonly type="text" class="form-control" id="identifier" v-model="selectedTextID" />
                     </div>
-                    <div class="mb-3">
-                      <label for="highlightedAnnotationProvenances" class="form-label">Provenances ({{highlightedAnnotationProvenances.length}}):</label>
-                      <ol>
-                        <li v-for="prov in highlightedAnnotationProvenances" :key="prov.url"><a :href="prov.url" target="_blank">{{prov.name}}</a> {{prov.version}}</li>
-                      </ol>
-                    </div>
-                    <div class="mb-3">
-                      <label for="highlightedAnnotationIdentifier" class="form-label">Identifier</label>
-                      <input readonly type="text" class="form-control" id="highlightedAnnotationIdentifier" v-model="highlighted_annotation.id" />
-                    </div>
-                    <div class="mb-3">
-                      <label for="highlightedAnnotationLabel" class="form-label">Label</label>
-                      <input readonly type="text" class="form-control" id="highlightedAnnotationLabel" v-model="highlighted_annotation.label" />
-                    </div>
-                    <div class="mb-3">
-                      <label for="highlightedAnnotationBiolinkType" class="form-label">Biolink type</label>
-                      <input readonly type="text" class="form-control" id="highlightedAnnotationBiolinkType" v-model="highlighted_annotation.biolink_type" />
-                    </div>
-                    <!--
-                    <div class="mb-3">
-                      <label for="highlightedAnnotationJSON" class="form-label">Selected text</label>
-                      <textarea readonly type="text" class="form-control" id="highlightedAnnotationJSON" v-model="highlightedAnnotationJSON" rows="100" />
-                    </div> -->
-                  </template>
-                </form>
+                    <template v-if="highlighted_annotation">
+                      <div class="mb-3">
+                        <label for="highlightedAnnotationText" class="form-label">Selected text</label>
+                        <input readonly type="text" class="form-control" id="highlightedAnnotationText" v-model="highlighted_annotation.text" />
+                      </div>
+                      <div class="mb-3">
+                        <label for="highlightedAnnotationProvenances" class="form-label">Provenances ({{highlightedAnnotationProvenances.length}}):</label>
+                        <ol>
+                          <li v-for="prov in highlightedAnnotationProvenances" :key="prov.url"><a :href="prov.url" target="_blank">{{prov.name}}</a> {{prov.version}}</li>
+                        </ol>
+                      </div>
+                      <div class="mb-3">
+                        <label for="highlightedAnnotationIdentifier" class="form-label">Identifier</label>
+                        <input readonly type="text" class="form-control" id="highlightedAnnotationIdentifier" v-model="highlighted_annotation.id" />
+                      </div>
+                      <div class="mb-3">
+                        <label for="highlightedAnnotationLabel" class="form-label">Label</label>
+                        <input readonly type="text" class="form-control" id="highlightedAnnotationLabel" v-model="highlighted_annotation.label" />
+                      </div>
+                      <div class="mb-3">
+                        <label for="highlightedAnnotationBiolinkType" class="form-label">Biolink type</label>
+                        <input readonly type="text" class="form-control" id="highlightedAnnotationBiolinkType" v-model="highlighted_annotation.biolink_type" />
+                      </div>
+                      <!--
+                      <div class="mb-3">
+                        <label for="highlightedAnnotationJSON" class="form-label">Selected text</label>
+                        <textarea readonly type="text" class="form-control" id="highlightedAnnotationJSON" v-model="highlightedAnnotationJSON" rows="100" />
+                      </div> -->
+                    </template>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
