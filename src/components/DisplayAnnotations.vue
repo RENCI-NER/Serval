@@ -2,7 +2,7 @@
 import "@ghentcdh/annotated-text/annotated-text.css";
 import "bootstrap/js/dist/collapse";
 
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {type Annotation, createAnnotatedText, getAnnotatedText} from "@ghentcdh/annotated-text";
 
 defineProps<{
@@ -18,6 +18,9 @@ const annotatedTextByTitle = ref({});
 const annotatedTextByAnnotationsDescending = ref({});
 const concepts = ref({});
 const highlighted_annotation = ref({});
+
+// UI modelled data.
+const selectedTextID = ref("");
 
 // 3. Helper to load and parse a JSONL file
 async function fetchJsonl(url: string): Promise<object[]> {
@@ -129,7 +132,9 @@ function conceptsSortedByEntryCountDescending() {
       .sort((a, b) => b.entry_count - a.entry_count);
 }
 
-function updateAnnotatedText(id, annotatedText) {
+function selectText(id, annotatedText) {
+  selectedTextID.value = annotatedText.title;
+
   const textAnnotation = createAnnotatedText(id, {
         annotation: {
           defaultRender: "underline",
@@ -150,46 +155,99 @@ function updateAnnotatedText(id, annotatedText) {
       });
 }
 
+const highlightedAnnotationJSON = computed (() => JSON.stringify(highlighted_annotation.value, null, 2));
+const highlightedAnnotationProvenances = computed (() => {
+  if (!highlighted_annotation.value) return [];
+
+  const provenances = [];
+  let recurseBasedOn = function(annotation: any) {
+    if (annotation.provenance) provenances.push(annotation.provenance);
+    if (annotation.based_on) {
+      annotation.based_on.forEach(based_on_next => recurseBasedOn(based_on_next));
+    }
+  }
+  recurseBasedOn(highlighted_annotation.value);
+
+  return provenances;
+});
+
 </script>
 
 <template>
   <h2>Texts</h2>
   <template v-if="loaded">
-    <div class="container-fluid vh-100">
-      <div class="row h-100">
-        <div class="col-2 h-100 overflow-auto" style="max-height: 100vh;">
-          <div class="accordion" id="accordionTexts">
-            <div class="accordion-item" v-for="(annotatedText, index) in annotatedTextByAnnotationsDescending" :key="annotatedText.title">
-              <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseText' + index" aria-expanded="false" :aria-controls="'collapseText' + index" @click="updateAnnotatedText('annotatedTextComponent', annotatedText)">
-                  <code>{{annotatedText.title}}</code>
-                  {{annotatedText.annotations.length}} total annotations
-                </button>
-              </h2>
-              <div :id="'collapseText' + index" class="accordion-collapse collapse" data-bs-parent="#accordionTexts">
-                <div class="accordion-body">
-                  <p>Hmm.</p>
-                  <!--
-                  <ol>
-                    <li v-for="concept in conceptsForEntryTitle(annotatedText.title)" :key="concept.concept_id">
-                      <code>{{concept.concept_id}}</code> ({{uniqList(concept.labels).join(', ')}}) [{{uniqList(concept.biolink_types).join(', ')}}]
-                    </li>
-                  </ol>-->
+    <div class="card">
+      <div class="card-body">
+          <div class="row">
+            <div class="col-2 overflow-auto" style="max-height: 100vh;">
+              <div class="accordion" id="accordionTexts">
+                <div class="accordion-item" v-for="(annotatedText, index) in annotatedTextByAnnotationsDescending" :key="annotatedText.title">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseText' + index" aria-expanded="false" :aria-controls="'collapseText' + index" @click="selectText('annotatedTextComponent', annotatedText)">
+                      <code>{{annotatedText.title}}</code>
+                      {{annotatedText.annotations.length}} total annotations
+                    </button>
+                  </h2>
+                  <div :id="'collapseText' + index" class="accordion-collapse collapse" data-bs-parent="#accordionTexts">
+                    <div class="accordion-body">
+                      <p>Hmm.</p>
+                      <!--
+                      <ol>
+                        <li v-for="concept in conceptsForEntryTitle(annotatedText.title)" :key="concept.concept_id">
+                          <code>{{concept.concept_id}}</code> ({{uniqList(concept.labels).join(', ')}}) [{{uniqList(concept.biolink_types).join(', ')}}]
+                        </li>
+                      </ol>-->
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="col-8">
-          <div class="h-100 d-flex">
-            <div id="annotatedTextComponent">
-             Test
+            <div class="col-5 card">
+              <div class="card-body">
+                <p v-if="!selectedTextID">Please select a text from the left.</p>
+                <div id="annotatedTextComponent" />
+              </div>
+            </div>
+            <div class="col-5 card">
+              <div class="card-body">
+                <form>
+                  <div class="">
+                    <label for="identifier" class="form-label">Text ID</label>
+                    <input readonly type="text" class="form-control" id="identifier" v-model="selectedTextID" />
+                  </div>
+                  <template v-if="highlighted_annotation">
+                    <div class="mb-3">
+                      <label for="highlightedAnnotationText" class="form-label">Selected text</label>
+                      <input readonly type="text" class="form-control" id="highlightedAnnotationText" v-model="highlighted_annotation.text" />
+                    </div>
+                    <div class="mb-3">
+                      <label for="highlightedAnnotationProvenances" class="form-label">Provenances ({{highlightedAnnotationProvenances.length}}):</label>
+                      <ol>
+                        <li v-for="prov in highlightedAnnotationProvenances" :key="prov.url"><a :href="prov.url" target="_blank">{{prov.name}}</a> {{prov.version}}</li>
+                      </ol>
+                    </div>
+                    <div class="mb-3">
+                      <label for="highlightedAnnotationIdentifier" class="form-label">Identifier</label>
+                      <input readonly type="text" class="form-control" id="highlightedAnnotationIdentifier" v-model="highlighted_annotation.id" />
+                    </div>
+                    <div class="mb-3">
+                      <label for="highlightedAnnotationLabel" class="form-label">Label</label>
+                      <input readonly type="text" class="form-control" id="highlightedAnnotationLabel" v-model="highlighted_annotation.label" />
+                    </div>
+                    <div class="mb-3">
+                      <label for="highlightedAnnotationBiolinkType" class="form-label">Biolink type</label>
+                      <input readonly type="text" class="form-control" id="highlightedAnnotationBiolinkType" v-model="highlighted_annotation.biolink_type" />
+                    </div>
+                    <!--
+                    <div class="mb-3">
+                      <label for="highlightedAnnotationJSON" class="form-label">Selected text</label>
+                      <textarea readonly type="text" class="form-control" id="highlightedAnnotationJSON" v-model="highlightedAnnotationJSON" rows="100" />
+                    </div> -->
+                  </template>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col-2">
-          <code>{{highlighted_annotation}}</code>
-        </div>
       </div>
     </div>
 
