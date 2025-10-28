@@ -172,6 +172,14 @@ const highlightedAnnotationProvenances = computed (() => {
   return provenances;
 });
 
+function annotationsByProvenance(annotations: any[]) {
+  return annotations.reduce((acc, annotation) => {
+    const key = annotation.provenance.name + " " + annotation.provenance.version;
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
 </script>
 
 <template>
@@ -186,7 +194,7 @@ const highlightedAnnotationProvenances = computed (() => {
                   <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseText' + index" aria-expanded="false" :aria-controls="'collapseText' + index" @click="selectText('annotatedTextComponent', annotatedText)">
                       <code>{{annotatedText.title}}</code>
-                      {{annotatedText.annotations.length}} total annotations
+                      {{annotatedText.annotations.length}} total annotations: {{annotationsByProvenance(annotatedText.annotations)}}
                     </button>
                   </h2>
                   <div :id="'collapseText' + index" class="accordion-collapse collapse" data-bs-parent="#accordionTexts">
