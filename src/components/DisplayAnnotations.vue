@@ -174,7 +174,7 @@ const highlightedAnnotationProvenances = computed (() => {
 
 function annotationsByProvenance(annotations: any[]) {
   return annotations.reduce((acc, annotation) => {
-    const key = annotation.provenance.name + " " + annotation.provenance.version;
+    const key = annotation.provenance.name;
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
